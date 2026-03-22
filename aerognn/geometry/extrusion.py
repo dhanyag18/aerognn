@@ -1,15 +1,15 @@
 import numpy as np
 
 def extrude_building(
+        num_layers,
+        taper,
+        bulge,
+        helical_twist,
+        num_setbacks,
+        setback_reduction,
+        chamfer_distance,
         cross_section: np.ndarray,
-        height: float = 200.0,
-        num_layers: int = 50,
-        taper: float = 1.0, 
-        bulge: float = 1.0,
-        helical_twist: float = 0.0,
-        num_setbacks: int = 0,
-        setback_reduction: float = 0.2,
-        chamfer_distance: float = 0.0
+        height: float = 200.0   
 ):
     
     layers = np.linspace(0, height, num_layers)
