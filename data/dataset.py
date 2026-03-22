@@ -14,4 +14,4 @@ class BuildingDataset(Dataset):
         return len(self.file_list)
  
     def get(self, idx):
-        return torch.load(self.file_list[idx], weights_only=True)
+        return torch.load(self.file_list[idx], weights_only=False)
