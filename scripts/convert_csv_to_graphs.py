@@ -18,11 +18,11 @@ def main():
     os.makedirs(args.output, exist_ok=True)
  
     for idx, row in df.iterrows():
-        cs = generate_cross_section(n_1=row['n'], n_2= row['n'], n_3 = row['n'], m=int(row['m']))
+        cs = generate_cross_section(n_1=row['n'], n_2= row['n'], n_3 = row['n'], m=int(row['m']), num_points = 36)
         cs = apply_aspect_ratio(cs, row['AR'])
         cs = normalize_area(cs)
         verts, faces = extrude_building(
-            num_layers = 100,
+            num_layers = 20,
             taper=row['taper'],
             bulge=row['bulge'],
             helical_twist=row['helical_twist'],
