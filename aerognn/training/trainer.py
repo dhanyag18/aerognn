@@ -1,4 +1,5 @@
 import torch
+from sklearn.metrics import r2_score
 from torch_geometric.loader import DataLoader
 from sklearn.model_selection import GroupKFold
 from aerognn.models.gcn_surrogate import BuildingGCN
@@ -26,7 +27,8 @@ def evaluate(model, loader, criterion):
             preds.extend(pred.tolist())
             actuals.extend(batch.y[:, 0].tolist())
     mae = sum(abs(p-a) for p,a in zip(preds, actuals)) / len(preds)
-    return total_loss / len(loader.dataset), mae
+    r_squared = r2_score(actuals, preds)
+    return total_loss / len(loader.dataset), mae, r_squared
 
 def cross_validation(dataset, epochs):
 
@@ -65,6 +67,7 @@ def cross_validation(dataset, epochs):
     groups = [BATCH_GROUPS[d.id.item()] for d in dataset]
     cv_strategy = GroupKFold(n_splits = 10)
     fold_mae = []
+    fold_r2 = []
     for (train_idx, test_idx) in cv_strategy.split(range(len(dataset)), groups=groups):
         
         train_x = DataLoader([dataset[i] for i in train_idx], batch_size=32, shuffle=False)
@@ -78,12 +81,15 @@ def cross_validation(dataset, epochs):
         )
 
         for epoch in range (epochs):
-            train_epoch(model, train_x, optimizer, criterion)
-            loss, mae = evaluate(model, test_x, criterion)
-            scheduler.step(loss)
-            if epoch % 100 == 0:
-                print(f"Epoch: {epoch}, loss: {loss}, MAE: {mae}")
+            train_loss = train_epoch(model, train_x, optimizer, criterion)
+            val_loss, mae, r_squared = evaluate(model, test_x, criterion)
+            scheduler.step(val_loss)
+            if (epoch + 1) % 50 == 0:
+                print(f"Epoch: {epoch + 1}, Training Loss: {train_loss}, Validation loss: {val_loss}, MAE: {mae}, R^2: {r_squared}")
         
         fold_mae.append(mae)
+        fold_r2.append(r_squared)
     
-    return sum(fold_mae)/len(fold_mae)
+    avg_mae = sum(fold_mae)/len(fold_mae)
+    avg_r2 = sum(fold_r2)/len(fold_r2)
+    return avg_mae, avg_r2
