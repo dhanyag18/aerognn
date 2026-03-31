@@ -15,7 +15,7 @@ def extrude_building(
     layers = np.linspace(0, height, num_layers)
     full_layers= []
     faces = []
-    n_points = 360
+    n_points = len(cross_section)
 
     for i in range(num_layers):
         layer_coords=cross_section.copy()

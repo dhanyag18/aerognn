@@ -8,23 +8,28 @@ import pyvista as pv
 def mesh_to_pyg_graph(
     vertices: np.ndarray,
     faces: np.ndarray,
-    id: int, 
+    id: int = None, 
     score: float = None, 
     cd_mean: float = None,
     cl_mean: float = None,
-    cl_std: float = None
+    cl_std: float = None,
+    height: float = 200.0
 ):
-
     edge_index = _faces_to_edge_index(faces)
-    x = _compute_node_features(vertices, faces)
+    x = _compute_node_features(vertices, faces, height=height)
+    
     data = Data(x=x, edge_index=edge_index)
-    data.id = id
-    data.y = torch.tensor([[
-        score, 
-        cd_mean, 
-        cl_mean, 
-        cl_std
-    ]], dtype=torch.float)
+    
+    if id is not None:
+        data.id = id
+
+    if score is not None:
+        data.y = torch.tensor([[
+            score, 
+            cd_mean if cd_mean is not None else 0.0, 
+            cl_mean if cl_mean is not None else 0.0, 
+            cl_std if cl_std is not None else 0.0
+        ]], dtype=torch.float)
 
     return data
 

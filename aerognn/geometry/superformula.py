@@ -4,9 +4,9 @@ def generate_cross_section(
         n_2: float,
         n_3: float,
         m: int,
+        num_points: int,
         a: float = 1.0,
         b: float = 1.0,
-        num_points: int = 360
 ):
     phi = np.linspace(0, 2 * np.pi, num_points)
     r = (np.abs(np.cos(m*phi/4)/a)**n_2 + np.abs(np.sin(m*phi/4)/b)**n_3)**(-1/n_1)
