@@ -58,12 +58,12 @@ def test_train_epoch():
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     criterion = torch.nn.MSELoss() 
     for epoch in range(5):
-        loss = train_epoch(model, loader, optimizer, criterion)
+        loss, mae = train_epoch(model, loader, optimizer, criterion)
         assert not math.isnan(loss)
 
 def test_cross_validate():
     dataset = BuildingDataset()
-    mae = cross_validation(dataset, epochs = 1)
+    mae, r2 = cross_validation(dataset, epochs = 1)
     assert not math.isnan(mae)
 
 
