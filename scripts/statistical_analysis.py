@@ -5,7 +5,15 @@ from aerognn.training.trainer import train_epoch
 import numpy as np
 from torch_geometric.loader import DataLoader
 
-def train_and_evaluate(dataset, epochs):
+def set_seed(seed=42):
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+def train_and_evaluate(dataset, epochs, seed = 42):
+    torch.manual_seed(seed)
+    np.random.seed(seed)
     model = BuildingGCN()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     criterion = torch.nn.MSELoss()
@@ -17,24 +25,27 @@ def train_and_evaluate(dataset, epochs):
 
     
 def permutation_test():
+   
     dataset = BuildingDataset()
-    
+    data_list = [data for data in dataset]
     y = np.array([data.y[0, 0].item() for data in dataset])
-    n_permutations = 100
-    original_labels = [d.y[0, 0].item() for d in dataset]
-    epochs = 20
     
-    real_mae = train_and_evaluate(dataset, epochs)
+    n_permutations = 100
+    original_labels = [data.y[0, 0].item() for data in dataset]
+    epochs = 50
+    
+    real_mae = train_and_evaluate(dataset, epochs, seed = 42)
     shuffled_maes = []
     for i in range(n_permutations):
-        y_shuffled = np.random.permutation([d.y[0, 0].item() for d in dataset])
-        for j, data in enumerate(dataset):
+        rng = np.random.RandomState(i)
+        y_shuffled = rng.permutation(original_labels)
+        for j, data in enumerate(data_list):
             data.y[0, 0] = y_shuffled[j]
-        mae = train_and_evaluate(dataset, epochs)
+        mae = train_and_evaluate(data_list, epochs, seed = 42)
         shuffled_maes.append(mae)
         print(f"Permutation {i+1}/{n_permutations}: MAE={mae:.4f}")
     
-    for j, data in enumerate(dataset):
+    for j, data in enumerate(data_list):
         data.y[0, 0] = original_labels[j]
 
     p_value = (sum(1 for m in shuffled_maes if m <= real_mae) + 1) / (n_permutations + 1)
