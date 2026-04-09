@@ -1,10 +1,17 @@
 import torch
+import numpy as np
 import copy
 from torch.utils.data import random_split
 from aerognn.data.dataset import BuildingDataset
 from aerognn.models.gcn_surrogate import BuildingGCN
 from torch_geometric.loader import DataLoader
 from aerognn.training.trainer import train_epoch, evaluate
+
+def set_seed(seed=42):
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
 
 def train_final_model():
     
