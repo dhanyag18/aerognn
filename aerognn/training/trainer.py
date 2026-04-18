@@ -69,7 +69,7 @@ def cross_validation(dataset, epochs):
     **{i: f"optimized_4{i}" for i in range(484, 499)}
     }
    
-    groups = [BATCH_GROUPS[d.id.item()] for d in dataset]
+    groups = [BATCH_GROUPS[d.id] for d in dataset]
     cv_strategy = GroupKFold(n_splits = 10)
     fold_mae = []
     fold_r2 = []
