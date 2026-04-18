@@ -14,7 +14,7 @@ def set_seed(seed=42):
 def train_and_evaluate(dataset, epochs, seed = 42):
     torch.manual_seed(seed)
     np.random.seed(seed)
-    model = BuildingGCN()
+    model = BuildingGCN() 
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     criterion = torch.nn.MSELoss()
     data = DataLoader(dataset, batch_size=32)
