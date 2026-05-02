@@ -4,7 +4,7 @@ from torch_geometric.nn import SAGEConv, global_mean_pool
 
 class PINNGraphNet(torch.nn.Module):
     
-    def __init__(self, in_channels=12, hidden=64):
+    def __init__(self, in_channels=11, hidden=64):
         super().__init__()
 
         self.conv1 = SAGEConv(in_channels, hidden)
