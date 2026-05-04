@@ -32,7 +32,7 @@ def main():
             cross_section = cs
         )
  
-        graph = mesh_to_pyg_graph(verts, faces, score=row['score'], id = row['id'], cd_mean = row['cd_mean'], cl_mean = row['cl_mean'], cl_std = row['cl_std'] )
+        graph = mesh_to_pyg_graph(verts, faces, score=row['score'], id = row['id'])
         torch.save(graph, os.path.join(args.output, f'building_{idx:04d}.pt'))
         print(f'Converted {idx+1}/{len(df)}')
 
