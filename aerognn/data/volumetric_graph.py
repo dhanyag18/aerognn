@@ -1,4 +1,3 @@
-# volumetric_graph.py
 import torch
 import numpy as np
 from torch_geometric.data import Data
