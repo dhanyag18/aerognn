@@ -10,8 +10,8 @@ from aerognn.models.pinn_graphnet import PINNGraphNet
 class PINNTrainer:
 
     def __init__(self, model, physics_loss, optimizer,
-                 lambda_data=1.0, lambda_cont=0.1,
-                 lambda_mom=0.01):
+                 lambda_data=1.0, lambda_cont=0.05,
+                 lambda_mom=0.001):
         self.model = model
         self.physics = physics_loss
         self.optimizer = optimizer
@@ -213,14 +213,6 @@ def cross_validation_pinn(dataset, epochs):
             val_loss = metrics['loss']
             scheduler.step(val_loss)
 
-            if (epoch + 1) % 5 == 0:
-                print(f"Epoch {epoch+1}, Loss: {val_loss:.4f}, "
-                      f"Score R2: {metrics['r2_score']:.4f}, MAE: {metrics['mae_score']:.4f} | "
-                      f"Cd R2: {metrics['r2_cd']:.4f}, Cl R2: {metrics['r2_cl']:.4f}, "
-                      f"Clstd R2: {metrics['r2_clstd']:.4f} | "
-                      f"vx R2: {metrics['r2_vx']:.4f}, vy R2: {metrics['r2_vy']:.4f}, "
-                      f"p R2: {metrics['r2_pres']:.4f}", flush=True)
-
             if epoch in curriculum_transitions:
                 best_val_loss = float('inf')
                 no_improve_count = 0
@@ -242,10 +234,6 @@ def cross_validation_pinn(dataset, epochs):
 
         model.load_state_dict(best_model_state)
         metrics = trainer.evaluate(test_x)
-        print(f"Fold done — Score R2: {metrics['r2_score']:.4f}, MAE: {metrics['mae_score']:.4f} | "
-              f"Cd R2: {metrics['r2_cd']:.4f}, Cl R2: {metrics['r2_cl']:.4f}, "
-              f"Clstd R2: {metrics['r2_clstd']:.4f} | "
-              f"vx R2: {metrics['r2_vx']:.4f}, p R2: {metrics['r2_pres']:.4f}", flush=True)
 
         fold_metrics['score_mae'].append(metrics['mae_score'])
         fold_metrics['score_r2'].append(metrics['r2_score'])
