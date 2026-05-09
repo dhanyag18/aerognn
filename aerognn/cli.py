@@ -141,9 +141,7 @@ def analyze(n, m, ar, twist, bulge, taper, setbacks,
     )
 
     pressure_path = os.path.join(output_dir, 'pressure_map.png')
-    plot_surface_pressure(wall_pos, wall_pressure, verts, faces,
-                          title=f'Pressure Distribution (n={n}, m={m})',
-                          output_path=pressure_path)
+    plot_surface_pressure(wall_pos, wall_pressure, verts, faces, title=f'Pressure Distribution (n={n}, m={m})',output_path=pressure_path)
 
     all_pos = batch.pos.numpy().astype(np.float32)
     pv_faces = np.hstack([np.full((len(faces), 1), 3), faces])
@@ -169,10 +167,10 @@ def analyze(n, m, ar, twist, bulge, taper, setbacks,
         json.dump(report, f, indent=2)
 
     click.echo(f'Results saved to {output_dir}/')
-    click.echo(f'  pressure_map.png')
-    click.echo(f'  streamlines.png')
-    click.echo(f'  report.json')
-    click.echo(f'Predicted score: {composite:.4f} | Cd: {cd:.4f}, Cl: {cl:.4f}, Cl_std: {cl_std:.4f}')
+    click.echo(f'pressure_map.png')
+    click.echo(f'streamlines.png')
+    click.echo(f'report.json')
+    click.echo(f'Predicted score: {composite:.4f}, Cd: {cd:.4f}, Cl: {cl:.4f}, Cl_std: {cl_std:.4f}')
 
 if __name__ == '__main__':
     cli()
