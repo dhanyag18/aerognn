@@ -95,13 +95,13 @@ def _parse_boundary_info(mesh_path):
 
 def _find_latest_time(case_dir: str):
     entries = os.listdir(case_dir)
-    time_dirs = []
+    time_dirs = {}
     for entry in entries:
         try:
-            time_dirs.append(float(entry))
+            time_dirs[float(entry)] = entry
         except ValueError:
             continue
-    return str(max(time_dirs))
+    return time_dirs[max(time_dirs)]
 
 def load_openfoam_field(case_dir: str, time_step: str = None):
     if time_step is None:
