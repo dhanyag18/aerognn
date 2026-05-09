@@ -43,6 +43,9 @@ def build_volumetric_graph(
     return data
 
 def _compute_point_normals(points: np.ndarray, k: int = 10):
+    k = min(k, len(points) - 1)
+    if k < 1:
+        return np.zeros((len(points), 3))
     nbrs = NearestNeighbors(n_neighbors=k+1).fit(points)
     _, indices = nbrs.kneighbors(points)
     normals = np.zeros_like(points)
