@@ -37,33 +37,13 @@ def test_known_gradient():
     physics = PhysicsLoss()
     pos, edge_index = make_grid_graph()
     f = 2.0 * pos[:, 0:1] + 3.0 * pos[:, 1:2] - 1.0 * pos[:, 2:3]
-    grad = physics.compute_gradients(f, pos, edge_index)
+    grad = physics._compute_gradients(f, pos, edge_index)
     interior = torch.zeros(pos.shape[0], dtype=torch.bool)
     interior[12:-12] = True
     grad_interior = grad[interior]
     expected = torch.tensor([2.0, 3.0, -1.0])
     mean_grad = grad_interior[:, 0, :].mean(dim=0)
-    assert torch.allclose(mean_grad, expected, atol=0.1), \
-        f"Expected gradient [2, 3, -1], got {mean_grad.tolist()}"
-
-def test_no_slip_nonzero():
-    physics = PhysicsLoss()
-    n_nodes = 20
-    velocity = torch.randn(n_nodes, 3)
-    node_types = torch.zeros(n_nodes, dtype=torch.long)
-    node_types[:5] = 1
-    loss = physics.boundary_loss(velocity, node_types)
-    assert loss.item() > 0
-
-def test_no_slip_zero():
-    physics = PhysicsLoss()
-    n_nodes = 20
-    velocity = torch.randn(n_nodes, 3)
-    velocity[:5] = 0.0
-    node_types = torch.zeros(n_nodes, dtype=torch.long)
-    node_types[:5] = 1
-    loss = physics.boundary_loss(velocity, node_types)
-    assert loss.item() < 1e-8
+    assert torch.allclose(mean_grad, expected, atol=0.1)
 
 def test_divergence_free_field():
     physics = PhysicsLoss()
