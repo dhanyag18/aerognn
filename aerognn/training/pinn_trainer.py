@@ -7,6 +7,7 @@ from sklearn.model_selection import GroupKFold
 from aerognn.training.physics_loss import PhysicsLoss
 from aerognn.models.pinn_graphnet import PINNGraphNet
 
+
 class PINNTrainer:
 
     def __init__(self, model, physics_loss, optimizer,
@@ -20,7 +21,12 @@ class PINNTrainer:
             'continuity': lambda_cont,
             'momentum': lambda_mom,
         }
-        self.loss_history = {k: [] for k in self.lambdas}
+        self.loss_history = {
+            'total': [],
+            'data': [],
+            'continuity': [],
+            'momentum': [],
+        }
 
     def train_step(self, batch, epoch):
         self.model.train()
@@ -28,6 +34,9 @@ class PINNTrainer:
         output = self.model(batch)
         L_data = self._data_loss(output, batch)
         interior_mask = (batch.node_types == 0)
+
+        L_cont = torch.tensor(0.0)
+        L_mom = torch.tensor(0.0)
 
         if epoch < 100:
             L_total = L_data
@@ -37,6 +46,7 @@ class PINNTrainer:
             if torch.isfinite(L_cont):
                 L_total = L_data + self.lambdas['continuity'] * L_cont
             else:
+                L_cont = torch.tensor(0.0)
                 L_total = L_data
         else:
             L_cont = self.physics.continuity_residual(
@@ -54,10 +64,10 @@ class PINNTrainer:
         torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1)
         self.optimizer.step()
 
-        losses = {'total': L_total.item(), 'data': L_data.item()}
-        for k, v in losses.items():
-            if k in self.loss_history:
-                self.loss_history[k].append(v)
+        self.loss_history['total'].append(L_total.item())
+        self.loss_history['data'].append(L_data.item())
+        self.loss_history['continuity'].append(L_cont.item())
+        self.loss_history['momentum'].append(L_mom.item())
 
     def _data_loss(self, output, batch):
         criterion = torch.nn.MSELoss()
@@ -77,12 +87,12 @@ class PINNTrainer:
 
     def evaluate(self, loader):
         self.model.eval()
-        score_preds, score_actuals = [],[]
-        cd_preds, cd_actuals = [],[]
-        cl_preds, cl_actuals = [],[]
-        clstd_preds, clstd_actuals = [],[]
-        vel_preds, vel_actuals = [],[]
-        pres_preds, pres_actuals = [],[]
+        score_preds, score_actuals = [], []
+        cd_preds, cd_actuals = [], []
+        cl_preds, cl_actuals = [], []
+        clstd_preds, clstd_actuals = [], []
+        vel_preds, vel_actuals = [], []
+        pres_preds, pres_actuals = [], []
         criterion = torch.nn.MSELoss()
         total_loss = 0
 
@@ -178,10 +188,10 @@ def cross_validation_pinn(dataset, epochs):
     groups = [BATCH_GROUPS[d.id] for d in dataset]
     cv_strategy = GroupKFold(n_splits=10)
 
-    fold_metrics = {k:[] for k in [
+    fold_metrics = {k: [] for k in [
         'score_mae', 'score_r2',
         'cd_mae', 'cd_r2',
-        'cl_mae','cl_r2',
+        'cl_mae', 'cl_r2',
         'clstd_mae', 'clstd_r2',
         'vx_mae', 'vx_r2',
         'vy_mae', 'vy_r2',
@@ -189,7 +199,7 @@ def cross_validation_pinn(dataset, epochs):
         'pres_mae', 'pres_r2',
     ]}
 
-    for train_idx, test_idx in cv_strategy.split(range(len(dataset)), groups=groups):
+    for fold, (train_idx, test_idx) in enumerate(cv_strategy.split(range(len(dataset)), groups=groups)):
         train_x = DataLoader([dataset[i] for i in train_idx], batch_size=8, shuffle=True)
         test_x = DataLoader([dataset[i] for i in test_idx], batch_size=8, shuffle=False)
 
@@ -209,9 +219,20 @@ def cross_validation_pinn(dataset, epochs):
             for batch in train_x:
                 trainer.train_step(batch, epoch)
 
-            metrics = trainer.evaluate(test_x)
-            val_loss = metrics['loss']
-            scheduler.step(val_loss)
+            if (epoch + 1) % 5 == 0 or epoch in curriculum_transitions:
+                metrics = trainer.evaluate(test_x)
+                val_loss = metrics['loss']
+                scheduler.step(val_loss)
+                print(f"Fold {fold+1} Epoch {epoch+1}, Loss: {val_loss:.4f}, "
+                      f"Score R2: {metrics['r2_score']:.4f} | "
+                      f"Cd R2: {metrics['r2_cd']:.4f}, Cl R2: {metrics['r2_cl']:.4f}, "
+                      f"Clstd R2: {metrics['r2_clstd']:.4f} | "
+                      f"vx R2: {metrics['r2_vx']:.4f}, p R2: {metrics['r2_pres']:.4f}",
+                      flush=True)
+            else:
+                metrics = trainer.evaluate(test_x)
+                val_loss = metrics['loss']
+                scheduler.step(val_loss)
 
             if epoch in curriculum_transitions:
                 best_val_loss = float('inf')
@@ -221,6 +242,7 @@ def cross_validation_pinn(dataset, epochs):
                     optimizer, patience=20, factor=0.5, min_lr=1e-5)
                 trainer.optimizer = optimizer
                 print(f"Epoch {epoch+1}: New physics loss introduced, resetting early stopping", flush=True)
+                continue
 
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
@@ -234,6 +256,10 @@ def cross_validation_pinn(dataset, epochs):
 
         model.load_state_dict(best_model_state)
         metrics = trainer.evaluate(test_x)
+        print(f"Fold {fold+1} done — Score R2: {metrics['r2_score']:.4f}, "
+              f"Cd R2: {metrics['r2_cd']:.4f}, Cl R2: {metrics['r2_cl']:.4f}, "
+              f"Clstd R2: {metrics['r2_clstd']:.4f} | "
+              f"vx R2: {metrics['r2_vx']:.4f}, p R2: {metrics['r2_pres']:.4f}", flush=True)
 
         fold_metrics['score_mae'].append(metrics['mae_score'])
         fold_metrics['score_r2'].append(metrics['r2_score'])
@@ -252,4 +278,4 @@ def cross_validation_pinn(dataset, epochs):
         fold_metrics['pres_mae'].append(metrics['mae_pres'])
         fold_metrics['pres_r2'].append(metrics['r2_pres'])
 
-    return {f'avg_{k}': np.mean(v) for k,v in fold_metrics.items()}
+    return {f'avg_{k}': np.mean(v) for k, v in fold_metrics.items()}
