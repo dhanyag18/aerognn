@@ -218,21 +218,10 @@ def cross_validation_pinn(dataset, epochs):
         for epoch in range(epochs):
             for batch in train_x:
                 trainer.train_step(batch, epoch)
-
-            if (epoch + 1) % 5 == 0 or epoch in curriculum_transitions:
-                metrics = trainer.evaluate(test_x)
-                val_loss = metrics['loss']
-                scheduler.step(val_loss)
-                print(f"Fold {fold+1} Epoch {epoch+1}, Loss: {val_loss:.4f}, "
-                      f"Score R2: {metrics['r2_score']:.4f} | "
-                      f"Cd R2: {metrics['r2_cd']:.4f}, Cl R2: {metrics['r2_cl']:.4f}, "
-                      f"Clstd R2: {metrics['r2_clstd']:.4f} | "
-                      f"vx R2: {metrics['r2_vx']:.4f}, p R2: {metrics['r2_pres']:.4f}",
-                      flush=True)
-            else:
-                metrics = trainer.evaluate(test_x)
-                val_loss = metrics['loss']
-                scheduler.step(val_loss)
+            
+            metrics = trainer.evaluate(test_x)
+            val_loss = metrics['loss']
+            scheduler.step(val_loss)
 
             if epoch in curriculum_transitions:
                 best_val_loss = float('inf')
@@ -256,10 +245,7 @@ def cross_validation_pinn(dataset, epochs):
 
         model.load_state_dict(best_model_state)
         metrics = trainer.evaluate(test_x)
-        print(f"Fold {fold+1} done — Score R2: {metrics['r2_score']:.4f}, "
-              f"Cd R2: {metrics['r2_cd']:.4f}, Cl R2: {metrics['r2_cl']:.4f}, "
-              f"Clstd R2: {metrics['r2_clstd']:.4f} | "
-              f"vx R2: {metrics['r2_vx']:.4f}, p R2: {metrics['r2_pres']:.4f}", flush=True)
+        
 
         fold_metrics['score_mae'].append(metrics['mae_score'])
         fold_metrics['score_r2'].append(metrics['r2_score'])
