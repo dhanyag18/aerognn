@@ -96,11 +96,6 @@ def train_final_pinn_model():
             
         if (epoch + 1) % 5 == 0:
             print(f"Epoch {epoch+1}, Loss: {val_loss:.4f}")
-            
-        else:
-            metrics = trainer.evaluate(test_loader)
-            val_loss = metrics['loss']
-            scheduler.step(val_loss)
  
         if epoch in curriculum_transitions:
             
