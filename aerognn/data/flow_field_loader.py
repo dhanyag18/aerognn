@@ -1,6 +1,6 @@
 import numpy as np
 import os
-
+   
 def _parse_vector_field(path):
     vectors = []
     with open(path, 'r') as f:
@@ -102,6 +102,56 @@ def _find_latest_time(case_dir: str):
         except ValueError:
             continue
     return time_dirs[max(time_dirs)]
+
+def parse_force_coefficients(case_dir: str) -> dict:
+    import glob
+    import numpy as np
+
+    for fname in ('forceCoeffs.dat', 'coefficient.dat'):
+        pattern = os.path.join(
+            case_dir, 'postProcessing', 'forceCoeffs1', '*', fname
+        )
+        matches = glob.glob(pattern)
+        if matches:
+            break
+    else:
+        raise FileNotFoundError(
+            f'No forceCoeffs.dat or coefficient.dat found in '
+            f'{case_dir}/postProcessing/forceCoeffs1/'
+        )
+
+    coeff_path = matches[0]
+    times, cd_vals, cl_vals = [], [], []
+    with open(coeff_path, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            cols = line.split()
+            if len(cols) < 5:
+                continue
+            try:
+                times.append(float(cols[0]))
+                cd_vals.append(float(cols[1]))
+                cl_vals.append(float(cols[4]))
+            except ValueError:
+                continue
+
+    times = np.array(times)
+    cd_vals = np.array(cd_vals)
+    cl_vals = np.array(cl_vals)
+
+    n = len(times)
+    start = int(0.4 * n)
+    cd_mean = float(np.mean(cd_vals[start:]))
+    cl_mean = float(np.mean(cl_vals[start:]))
+    cl_std = float(np.std(cl_vals[start:]))
+
+    return {
+        'cd_mean': cd_mean,
+        'cl_mean': cl_mean,
+        'cl_std': cl_std,
+    }
 
 def load_openfoam_field(case_dir: str, time_step: str = None):
     if time_step is None:
