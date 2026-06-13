@@ -1,9 +1,7 @@
 import torch
 from aerognn.data.dataset import BuildingDataset
 
-
 class MultiFidelityDataset:
-
     def __init__(self, coarse_dir='data/coarse/',
                  fine_dir='data/processed/'):
         self.coarse_dir = coarse_dir
