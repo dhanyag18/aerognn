@@ -9,7 +9,6 @@ from torch_geometric.loader import DataLoader
 from aerognn.geometry.superformula import (
     generate_cross_section, apply_aspect_ratio, normalize_area
 )
-from aerognn.geometry.extrusion import extrude_building
 from aerognn.geometry.mesh_to_graph import mesh_to_pyg_graph
 from aerognn.training.physics_loss import PhysicsLoss
 
@@ -147,3 +146,4 @@ def get_diverse_gnn_pinn_recommendations(
         print(f"Diversity: min pairwise distance = {np.min(pdist(sel_scaled)):.2f}")
     
     return selected
+
