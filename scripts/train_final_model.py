@@ -167,9 +167,9 @@ def train_mf():
         coarse_graph = coarse_lookup.get(coarse_id)
         fine_graph   = fine_lookup.get(fine_id)
         if coarse_graph is None or fine_graph is None:
-            print(f"  Skipping coarse {coarse_id} -> fine {fine_id} (not found)")
+            print(f" Skipping coarse {coarse_id} to fine {fine_id}")
             continue
-        print(f"  Interpolating coarse {coarse_id} -> fine {fine_id}...",
+        print(f" Interpolating coarse {coarse_id} to fine {fine_id}",
               flush=True)
         g = copy.deepcopy(coarse_graph)
         g.y_coeffs = fine_graph.y_coeffs
@@ -207,7 +207,6 @@ def train_mf():
     no_improve_count = 0
     curriculum_transitions = {99, 199}
 
-    print("Stage 1: Coarse training...")
     for epoch in range(500):
         for batch in train_loader:
             trainer.train_step(batch, epoch)
@@ -216,10 +215,6 @@ def train_mf():
         val_loss = metrics['loss']
         scheduler.step(val_loss)
 
-        if (epoch + 1) % 5 == 0:
-            print(f"Coarse Epoch {epoch+1} | Loss: {val_loss:.4f} | "
-                  f"Score R2: {metrics['r2_score']:.4f} | "
-                  f"Cd R2: {metrics['r2_cd']:.4f}", flush=True)
 
         if epoch in curriculum_transitions:
             best_val_loss = float('inf')
@@ -258,7 +253,6 @@ def train_mf():
     correction_patience = 100
     correction_no_improve = 0
 
-    print("Stage 2: Correction training...")
     for epoch in range(500):
         for batch in fine_train:
             correction_trainer.correction_train_step(batch)
@@ -266,11 +260,6 @@ def train_mf():
         metrics = correction_trainer.evaluate(fine_test)
         val_loss = metrics['loss']
         correction_scheduler.step(val_loss)
-
-        if (epoch + 1) % 5 == 0:
-            print(f"Correction Epoch {epoch+1} | Loss: {val_loss:.4f} | "
-                  f"Score R2: {metrics['r2_score']:.4f} | "
-                  f"Cd R2: {metrics['r2_cd']:.4f}", flush=True)
 
         if val_loss < best_correction_loss:
             best_correction_loss = val_loss
