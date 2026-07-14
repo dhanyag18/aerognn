@@ -94,7 +94,6 @@ def build_fine_overlap(coarse_lookup, fine_lookup, coarse_to_fine):
 
 
 def cv_mf():
-    
     set_seed(42)
     dataset = MultiFidelityDataset()
     coarse_data = list(dataset.coarse)
