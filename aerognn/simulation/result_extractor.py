@@ -1,8 +1,6 @@
-from aerognn.data.flow_field_loader import (
-    load_openfoam_field,
-    parse_force_coefficients
-)
+from aerognn.data.flow_field_loader import load_openfoam_field, parse_force_coefficients
 from aerognn.data.volumetric_graph import build_volumetric_graph, subsample_mesh
+
 
 def extract_simulation_result(
     case_dir: str,
