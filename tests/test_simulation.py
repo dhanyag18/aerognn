@@ -3,8 +3,8 @@ from aerognn.simulation.result_extractor import extract_simulation_result
 from aerognn.simulation.runner import SimulationRunner
 import os
 
-TEMPLATE = '/Users/dhanyaganesh/Downloads/openfoam/vortex'
-HOST_AEROGNN = '/Users/dhanyaganesh/Downloads/aerognn'
+HOST_AEROGNN = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TEMPLATE = os.path.join(os.path.dirname(HOST_AEROGNN), 'openfoam', 'vortex')
 
 def test_full_pipeline():
     params = {

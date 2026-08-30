@@ -11,8 +11,8 @@ from aerognn.data.volumetric_graph import build_volumetric_graph, subsample_mesh
 from aerognn.data.flow_field_loader import _compute_cell_centers, _compute_cell_neighbors, _parse_boundary_info, _find_latest_time
 
 CONTAINER_NAME = 'openfoam_daemon'
-HOST_TEMPLATE_CASE = '/Users/dhanyaganesh/Downloads/openfoam/vortex'
-HOST_AEROGNN = '/Users/dhanyaganesh/Downloads/aerognn'
+HOST_AEROGNN = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+HOST_TEMPLATE_CASE = os.path.join(os.path.dirname(HOST_AEROGNN), 'openfoam', 'vortex')
 CONTAINER_HOME = '/home/openfoam'
 
 

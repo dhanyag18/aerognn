@@ -6,7 +6,7 @@ from aerognn.data.dataset import BuildingDataset
 from aerognn.data.multi_fidelity_dataset import MultiFidelityDataset
 from aerognn.models.gcn_surrogate import BuildingGCN
 from aerognn.models.pinn_graphnet import PINNGraphNet
-from aerognn.models.mutli_fidelity import MultiFidelityPINNGNN
+from aerognn.models.multi_fidelity import MultiFidelityPINNGNN
 from aerognn.training.pinn_trainer import PINNTrainer, PhysicsLoss
 from aerognn.training.mf_trainer import MFTrainer
 from torch_geometric.loader import DataLoader

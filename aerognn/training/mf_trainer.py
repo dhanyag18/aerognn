@@ -5,7 +5,7 @@ from sklearn.metrics import r2_score
 from torch_geometric.loader import DataLoader
 from sklearn.model_selection import GroupKFold
 from aerognn.training.physics_loss import PhysicsLoss
-from aerognn.models.mutli_fidelity import MultiFidelityPINNGNN
+from aerognn.models.multi_fidelity import MultiFidelityPINNGNN
 from aerognn.data.groups import get_coarse_groups, get_groups
 
 class MFTrainer:

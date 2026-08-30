@@ -2,13 +2,13 @@ import os
 import json
 import torch
 import numpy as np
-from aerognn.models.mutli_fidelity import MultiFidelityPINNGNN
+from aerognn.models.multi_fidelity import MultiFidelityPINNGNN
 from aerognn.models.uncertainty import mc_dropout_predict
 from aerognn.data.multi_fidelity_dataset import MultiFidelityDataset
 import aerognn.data.params_to_graph as pipeline
 from aerognn.optimization.differential_evolution import ShapeOptimizer  
 
-HOST_AEROGNN = '/Users/dhanyaganesh/Downloads/aerognn'
+HOST_AEROGNN = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = f'{HOST_AEROGNN}/final_mf_model.pt'
 
 

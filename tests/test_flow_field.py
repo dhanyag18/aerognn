@@ -1,9 +1,11 @@
 import numpy as np
 import torch
+import os
 from aerognn.data.flow_field_loader import load_openfoam_field
 from aerognn.data.volumetric_graph import build_volumetric_graph, classify_nodes
 
-CASE_DIR = "/Users/dhanyaganesh/Downloads/aerognn/data/raw/1"
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CASE_DIR = os.path.join(REPO_ROOT, "data", "raw", "1")
 def make_fields():
     cell_centers = np.array([
         [0.5, 0.5, 0.5],

@@ -4,7 +4,7 @@ import os
 import numpy as np
 from aerognn.data.multi_fidelity_dataset import MultiFidelityDataset
 from aerognn.data.interpolate import interpolate_fine_to_coarse
-from aerognn.models.mutli_fidelity import MultiFidelityPINNGNN
+from aerognn.models.multi_fidelity import MultiFidelityPINNGNN
 from aerognn.simulation.case_generator import generate_case
 from aerognn.simulation.runner import SimulationRunner
 from aerognn.simulation.result_extractor import extract_simulation_result
@@ -16,9 +16,10 @@ from aerognn.data.groups import get_coarse_to_fine
 from torch_geometric.loader import DataLoader
 import csv
 
-HOST_AEROGNN = '/Users/dhanyaganesh/Downloads/aerognn'
-TEMPLATE_DIR = '/Users/dhanyaganesh/Downloads/openfoam/vortex'
+HOST_AEROGNN = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TEMPLATE_DIR = os.path.join(os.path.dirname(HOST_AEROGNN), 'openfoam', 'vortex')
 OUTPUT_DIR   = os.path.join(HOST_AEROGNN, 'active_learning_cases')
+
 
 COARSE_TO_FINE = get_coarse_to_fine()
 
@@ -72,7 +73,7 @@ def evaluate_model(model, fine_overlap):
 
 def run_active_learning():
     model = MultiFidelityPINNGNN()
-    model.load_state_dict(torch.load(f'{HOST_AEROGNN}/final_mf_model.pt'))
+    model.load_state_dict(torch.load(os.path.join(HOST_AEROGNN, 'final_mf_model.pt')))
     model.eval()
 
     dataset = MultiFidelityDataset()
